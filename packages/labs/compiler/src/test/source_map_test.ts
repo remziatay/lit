@@ -6,7 +6,7 @@
 
 import {SourceMapConsumer} from 'source-map';
 
-import {test} from 'uvu';
+import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
 import {readFile} from 'fs/promises';
@@ -57,9 +57,17 @@ const setupTest = async (filename: string): Promise<SourceMapConsumer> => {
   return smc;
 };
 
-test('basic.ts', async () => {
-  const smc = await setupTest('basic.js.map');
+const test = suite<{smc: SourceMapConsumer}>('basic.js.map');
 
+test.before(async (ctx) => {
+  ctx.smc = await setupTest('basic.js.map');
+});
+
+test.after(async (ctx) => {
+  ctx.smc.destroy();
+});
+
+test('basic.ts', async ({smc}) => {
   // const sayHello = (name) => ({ ["_$litType$"]: lit_template_1, values: [name, '!'] });
   //                                                                         ^
   assertSourceMapLocationMapping({
